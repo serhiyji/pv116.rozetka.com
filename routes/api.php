@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,4 +22,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::get("/categories/all", [CategoryController::class, "getList"]);
 Route::post("/categories/create", [CategoryController::class, "create"]);
+Route::post("/categories/edit/{id}", [CategoryController::class, "edit"]);
+Route::delete("/categories/{id}", [CategoryController::class, "delete"]);
 
+Route::post("/login", [AuthController::class, "login"]);
