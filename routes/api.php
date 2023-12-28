@@ -25,4 +25,5 @@ Route::post("/categories/create", [CategoryController::class, "create"]);
 Route::post("/categories/edit/{id}", [CategoryController::class, "edit"]);
 Route::delete("/categories/{id}", [CategoryController::class, "delete"]);
 
-Route::post("/login", [AuthController::class, "login"]);
+Route::post("login", [AuthController::class, "login"]);
+Route::post("register", [AuthController::class, "register"]);

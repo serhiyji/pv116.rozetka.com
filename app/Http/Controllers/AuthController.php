@@ -1,12 +1,12 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Intervention\Image\Drivers\Gd\Driver;
 use Intervention\Image\ImageManager;
 use Symfony\Component\HttpFoundation\Response;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\Image;
 
 class AuthController extends Controller
 {
@@ -116,24 +116,36 @@ class AuthController extends Controller
      * )
      */
     public function register(Request $request) {
-        // Get the base64-encoded image data from the request
-        $base64Image = $request->input('image');
-        // Remove the "data:image/png;base64," prefix from the base64 string
-        $base64Image = str_replace('data:image/png;base64,', '', $base64Image);
-        // Decode the base64 string
-        $imageData = base64_decode($base64Image);
+
+        $validation = Validator::make($request->all(),[
+            'name'=> 'required|string',
+            'lastName'=> 'required|string',
+            //'image'=> 'required|string',
+            'phone'=> 'required|string',
+            'email'=> 'required|email',
+            'password'=> 'required|string|min:6',
+        ]);
+
+        if($validation->fails()) {
+            return response()->json($validation->errors(), Response::HTTP_BAD_REQUEST);
+        }
+
+        $input = $request->all();
         $imageName = uniqid().".webp";
         $sizes = [50,150,300,600,1200];
         // create image manager with desired driver
         $manager = new ImageManager(new Driver());
         foreach ($sizes as $size) {
             $fileSave = $size."_".$imageName;
-            //$imageRead = $manager->read($imageData);
-            $imageRead = Image::make($imageData);
+            $imageRead = $manager->read($input["image"]);
             $imageRead->scale(width: $size);
             $path=public_path('upload/'.$fileSave);
             $imageRead->toWebp()->save($path);
         }
-        return response()->json(['token'=>$imageName], Response::HTTP_OK);
+        $user = User::create(array_merge(
+            $validation->validated(),
+            ['password' => bcrypt($request->password), 'image'=> $imageName]
+        ));
+        return response()->json(['token'=>$user], Response::HTTP_OK);
     }
 }
